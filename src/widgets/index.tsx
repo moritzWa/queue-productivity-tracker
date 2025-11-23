@@ -1,42 +1,62 @@
-import { AppEvents, useRunAsync, declareIndexPlugin, QueueEvent, QueueInteractionScore, ReactRNPlugin, WidgetLocation, Card, Rem, RichTextInterface } from '@remnote/plugin-sdk';
+import {
+  AppEvents,
+  declareIndexPlugin,
+  QueueInteractionScore,
+  ReactRNPlugin,
+  WidgetLocation,
+} from '@remnote/plugin-sdk';
 import '../style.css';
 import '../App.css';
 
 async function onActivate(plugin: ReactRNPlugin) {
   // Register settings
-  await plugin.app.registerWidget(
-    "popup",
-    WidgetLocation.FloatingWidget, {
-      dimensions: {
-        width: 1200,
-        height: "auto",
-      },
-    }
-  );
+  await plugin.app.registerWidget('popup', WidgetLocation.FloatingWidget, {
+    dimensions: {
+      width: 1000,
+      height: 'auto',
+    },
+  });
 
   plugin.event.addListener(AppEvents.QueueEnter, undefined, () => {
     var startTime = 0;
     var totalCardsCompleted = 0;
     var totalTimeSpent = 0;
     var totalAgainCount = 0;
-    plugin.storage.setSession("cardPerMinute", 0);
-    plugin.storage.setSession("remainingTime", 0);
-    plugin.storage.setSession("totalCardsCompleted", 0);
-    plugin.storage.setSession("totalTimeSpent", 0);
-    plugin.storage.setSession("totalAgainCount", 0);
-    plugin.storage.setSession("expectedCompletionTime", "");
+    var cardTimestamps: number[] = [];
+    plugin.storage.setSession('cardPerMinute', 0);
+    plugin.storage.setSession('remainingTime', 0);
+    plugin.storage.setSession('totalCardsCompleted', 0);
+    plugin.storage.setSession('totalTimeSpent', 0);
+    plugin.storage.setSession('totalAgainCount', 0);
+    plugin.storage.setSession('expectedCompletionTime', '');
     startTime = Date.now();
 
-    async function updateDisplay(totalTimeSpent: number, totalCardsCompleted: number, totalCardsInDeckRemain: number) {
-      const cardPerMinute = parseFloat((totalCardsCompleted / (totalTimeSpent / 60)).toFixed(2));
+    async function updateDisplay(
+      totalTimeSpent: number,
+      totalCardsCompleted: number,
+      totalCardsInDeckRemain: number
+    ) {
+      // Calculate cards per minute for last 5 minutes (for display)
+      const now = Date.now();
+      const fiveMinutesAgo = now - 5 * 60 * 1000;
+      const recentCards = cardTimestamps.filter((t) => t >= fiveMinutesAgo);
+      const cardPerMinute =
+        recentCards.length > 0
+          ? parseFloat((recentCards.length / 5).toFixed(2))
+          : 0;
 
-      // Calculate remaining time (in minutes) to complete the totalCardsInDeckRemain with cardPerMinute
-      const remainingMinutes = totalCardsInDeckRemain / cardPerMinute;
+      // Calculate overall average for remaining time estimate (more accurate)
+      const overallCardPerMinute = parseFloat(
+        (totalCardsCompleted / (totalTimeSpent / 60)).toFixed(2)
+      );
+
+      // Calculate remaining time (in minutes) using overall average
+      const remainingMinutes = totalCardsInDeckRemain / overallCardPerMinute;
 
       // Convert remaining minutes to hours, minutes, and seconds
-      const INF_SYMBOL = "∞";
-      var remainingTime = "∞";
-      var expectedCompletionTime = "";
+      const INF_SYMBOL = '∞';
+      var remainingTime = '∞';
+      var expectedCompletionTime = '';
 
       // Check if remainingMinutes is Infinity or close to it.
       if (!isFinite(remainingMinutes)) {
@@ -44,55 +64,84 @@ async function onActivate(plugin: ReactRNPlugin) {
       } else {
         const hours = Math.floor(remainingMinutes / 60);
         const minutes = Math.floor(remainingMinutes % 60);
-        const seconds = Math.floor((remainingMinutes * 60) % 60);
-        remainingTime = `${hours} Hour ${minutes} Min ${seconds} Sec`;
+        remainingTime = `${hours}H ${minutes}M`;
 
         // Calculate the expected completion time in HH:MM:SS AM/PM
         const now = new Date();
         now.setMinutes(now.getMinutes() + remainingMinutes);
-        expectedCompletionTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        expectedCompletionTime = now.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
       }
 
-      plugin.storage.setSession("cardPerMinute", cardPerMinute);
-      plugin.storage.setSession("remainingTime", remainingTime);
-      plugin.storage.setSession("totalCardsCompleted", totalCardsCompleted);
-      plugin.storage.setSession("totalTimeSpent", (totalTimeSpent / 60).toFixed(2));
-      plugin.storage.setSession("totalAgainCount", totalAgainCount);
-      plugin.storage.setSession("expectedCompletionTime", expectedCompletionTime);
+      plugin.storage.setSession('cardPerMinute', cardPerMinute);
+      plugin.storage.setSession('remainingTime', remainingTime);
+      plugin.storage.setSession('totalCardsCompleted', totalCardsCompleted);
+      plugin.storage.setSession(
+        'totalTimeSpent',
+        (totalTimeSpent / 60).toFixed(2)
+      );
+      plugin.storage.setSession('totalAgainCount', totalAgainCount);
+      plugin.storage.setSession(
+        'expectedCompletionTime',
+        expectedCompletionTime
+      );
 
       setTimeout(async () => {
         await plugin.window.closeAllFloatingWidgets();
         await plugin.window.openFloatingWidget(
-          "popup",
-          { top: 55, left: 0 },
-          "rn-queue__top-bar",
+          'popup',
+          { top: -45, left: 0 },
+          'rn-queue',
           false
         );
       }, 25);
     }
 
-    plugin.event.addListener(AppEvents.RevealAnswer, undefined, async (data) => {
-      if (startTime) {
-        var endTime = Date.now();
-        var TimeDiff = (endTime - startTime) / 1000;
-        totalTimeSpent = totalTimeSpent + TimeDiff;
-        startTime = endTime;
+    plugin.event.addListener(
+      AppEvents.RevealAnswer,
+      undefined,
+      async (data) => {
+        if (startTime) {
+          var endTime = Date.now();
+          var TimeDiff = (endTime - startTime) / 1000;
+          totalTimeSpent = totalTimeSpent + TimeDiff;
+          startTime = endTime;
+        }
       }
-    });
+    );
 
-    plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (data) => {
-      if ((data.score as QueueInteractionScore) === QueueInteractionScore.AGAIN) {
-        totalAgainCount++;
-        var totalCardsInDeckRemain = await plugin.queue.getNumRemainingCards();
-        if (totalCardsInDeckRemain !== undefined)
-          updateDisplay(totalTimeSpent, totalCardsCompleted, totalCardsInDeckRemain);
-      } else {
-        totalCardsCompleted++;
-        var totalCardsInDeckRemain = await plugin.queue.getNumRemainingCards();
-        if (totalCardsInDeckRemain !== undefined)
-          updateDisplay(totalTimeSpent, totalCardsCompleted, totalCardsInDeckRemain);
+    plugin.event.addListener(
+      AppEvents.QueueCompleteCard,
+      undefined,
+      async (data) => {
+        if (
+          (data.score as QueueInteractionScore) === QueueInteractionScore.AGAIN
+        ) {
+          totalAgainCount++;
+          var totalCardsInDeckRemain =
+            await plugin.queue.getNumRemainingCards();
+          if (totalCardsInDeckRemain !== undefined)
+            updateDisplay(
+              totalTimeSpent,
+              totalCardsCompleted,
+              totalCardsInDeckRemain
+            );
+        } else {
+          totalCardsCompleted++;
+          cardTimestamps.push(Date.now());
+          var totalCardsInDeckRemain =
+            await plugin.queue.getNumRemainingCards();
+          if (totalCardsInDeckRemain !== undefined)
+            updateDisplay(
+              totalTimeSpent,
+              totalCardsCompleted,
+              totalCardsInDeckRemain
+            );
+        }
       }
-    });
+    );
 
     plugin.event.addListener(AppEvents.QueueExit, undefined, async (data) => {
       plugin.window.closeAllFloatingWidgets();

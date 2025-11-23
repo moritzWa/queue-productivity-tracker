@@ -42,4 +42,21 @@ body,
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: transparent !important;
+}
+
+/* CSS Variables for theming */
+:root {
+  --text-primary: rgb(29, 155, 222);
+  --text-success: #22c55e;
+  --text-warning: #eab308;
+  --text-danger: #ef4444;
+}
+
+/* Dark mode variables */
+.dark {
+  --text-primary: rgb(56, 189, 248);
+  --text-success: #4ade80;
+  --text-warning: #fbbf24;
+  --text-danger: #f87171;
 }

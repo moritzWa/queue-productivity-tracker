@@ -1,0 +1,14 @@
+/dist
+/node_modules
+/PluginZip.zip
+/package-lock.json
+/package.json
+/README.md
+/tsconfig.json
+/webpack.config.js
+/webpack.config.js.map
+/webpack.config.js.map.br
+/webpack.config.js.map.gz
+/webpack.config.js.map.lz4
+/webpack.config.js.map.xz
+/webpack.config.js.map.zstd

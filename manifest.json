@@ -1,10 +1,10 @@
 {
-  "author": "Praveen",
+  "author": "MoritzWa",
   "repoUrl": "https://github.com/voidtriangle/queue-motivator",
   "name": "Queue Time Tracker",
   "description": "Track and visualize your Remnote study metrics in real-time",
   "enableOnMobile": true,
-  "id": "PraveenFlash-ul43bcq",
+  "id": "MoritzW-queue-tracker",
   "manifestVersion": 1,
   "version": {
     "major": 1,
@@ -19,4 +19,3 @@
     }
   ]
 }
-
