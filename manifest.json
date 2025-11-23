@@ -1,8 +1,8 @@
 {
   "author": "MoritzWa",
-  "repoUrl": "https://github.com/voidtriangle/queue-motivator",
+  "repoUrl": "https://github.com/moritzWa/queue-productivity-tracker",
   "name": "Queue Productivity Tracker",
-  "description": "Track and visualize your Remnote study metrics in real-time",
+  "description": "Real-time flashcard speed tracking with color-coded performance indicators and session statistics",
   "enableOnMobile": true,
   "id": "MoritzW-productivity-tracker",
   "manifestVersion": 1,

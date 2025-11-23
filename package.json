@@ -1,8 +1,12 @@
 {
   "private": true,
-  "name": "remnote-plugin-template-react",
-  "version": "0.0.1",
+  "name": "queue-productivity-tracker",
+  "version": "1.0.1",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moritzWa/queue-productivity-tracker.git"
+  },
   "scripts": {
     "check-types": "tsc",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --color --progress --no-open",
