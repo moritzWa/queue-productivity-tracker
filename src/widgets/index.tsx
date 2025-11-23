@@ -36,7 +36,7 @@ async function onActivate(plugin: ReactRNPlugin) {
       totalCardsCompleted: number,
       totalCardsInDeckRemain: number
     ) {
-      // Calculate cards per minute for last 5 minutes (for display)
+      // Calculate cards per minute for last 5 minutes
       const now = Date.now();
       const fiveMinutesAgo = now - 5 * 60 * 1000;
       const recentCards = cardTimestamps.filter((t) => t >= fiveMinutesAgo);
@@ -45,13 +45,8 @@ async function onActivate(plugin: ReactRNPlugin) {
           ? parseFloat((recentCards.length / 5).toFixed(2))
           : 0;
 
-      // Calculate overall average for remaining time estimate (more accurate)
-      const overallCardPerMinute = parseFloat(
-        (totalCardsCompleted / (totalTimeSpent / 60)).toFixed(2)
-      );
-
-      // Calculate remaining time (in minutes) using overall average
-      const remainingMinutes = totalCardsInDeckRemain / overallCardPerMinute;
+      // Calculate remaining time (in minutes) to complete the totalCardsInDeckRemain with cardPerMinute
+      const remainingMinutes = totalCardsInDeckRemain / cardPerMinute;
 
       // Convert remaining minutes to hours, minutes, and seconds
       const INF_SYMBOL = '∞';
@@ -130,7 +125,6 @@ async function onActivate(plugin: ReactRNPlugin) {
             );
         } else {
           totalCardsCompleted++;
-          cardTimestamps.push(Date.now());
           var totalCardsInDeckRemain =
             await plugin.queue.getNumRemainingCards();
           if (totalCardsInDeckRemain !== undefined)
