@@ -1,10 +1,10 @@
 {
   "author": "MoritzWa",
   "repoUrl": "https://github.com/voidtriangle/queue-motivator",
-  "name": "Queue Time Tracker",
+  "name": "Queue Productivity Tracker",
   "description": "Track and visualize your Remnote study metrics in real-time",
   "enableOnMobile": true,
-  "id": "MoritzW-queue-tracker",
+  "id": "MoritzW-productivity-tracker",
   "manifestVersion": 1,
   "version": {
     "major": 1,
