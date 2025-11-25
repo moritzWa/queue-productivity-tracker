@@ -33,7 +33,14 @@ function Popup() {
 
     const interval = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);
+
+      // Check if queue element exists, if not, we've left the queue
+      const queueElement = document.querySelector('.rn-queue');
+      if (!queueElement) {
+        console.log('Queue element not found, closing widget.');
+        window.close();
+      }
+    }, 3000);
 
     return () => {
       clearInterval(interval);
