@@ -18,7 +18,8 @@ async function onActivate(plugin: ReactRNPlugin) {
   });
 
   plugin.event.addListener(AppEvents.QueueEnter, undefined, () => {
-    var startTime = 0;
+    const sessionStartTime = Date.now();
+    var startTime = sessionStartTime;
     var totalCardsCompleted = 0;
     var totalTimeSpent = 0;
     var totalAgainCount = 0;
@@ -29,7 +30,6 @@ async function onActivate(plugin: ReactRNPlugin) {
     plugin.storage.setSession('totalTimeSpent', 0);
     plugin.storage.setSession('totalAgainCount', 0);
     plugin.storage.setSession('expectedCompletionTime', '');
-    startTime = Date.now();
 
     async function updateDisplay(
       totalTimeSpent: number,
@@ -40,7 +40,7 @@ async function onActivate(plugin: ReactRNPlugin) {
       const fiveMinutesAgo = now - 5 * 60 * 1000;
       const recentCards = cardTimestamps.filter((t) => t >= fiveMinutesAgo);
 
-      const elapsedTimeMinutes = (now - startTime) / (1000 * 60);
+      const elapsedTimeMinutes = (now - sessionStartTime) / (1000 * 60);
       const timeWindowMinutes = Math.min(elapsedTimeMinutes, 5);
 
       const cardPerMinute =
