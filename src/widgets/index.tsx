@@ -40,12 +40,15 @@ async function onActivate(plugin: ReactRNPlugin) {
       const fiveMinutesAgo = now - 5 * 60 * 1000;
       const recentCards = cardTimestamps.filter((t) => t >= fiveMinutesAgo);
 
+      const elapsedTimeMinutes = (now - startTime) / (1000 * 60);
+      const timeWindowMinutes = Math.min(elapsedTimeMinutes, 5);
+
+      const cardPerMinute =
+        timeWindowMinutes > 0
+          ? parseFloat((recentCards.length / timeWindowMinutes).toFixed(2))
+          : 0;
+
       const sessionTimeMinutes = totalTimeSpent / 60;
-      const timeWindowMinutes = Math.min(sessionTimeMinutes, 5);
-
-      const recentSpeed = recentCards.length / timeWindowMinutes;
-      const cardPerMinute = parseFloat(recentSpeed.toFixed(2));
-
       const overallCardPerMinute = parseFloat(
         (totalCardsCompleted / sessionTimeMinutes).toFixed(2)
       );
@@ -124,6 +127,7 @@ async function onActivate(plugin: ReactRNPlugin) {
             );
         } else {
           totalCardsCompleted++;
+          cardTimestamps.push(Date.now());
           var totalCardsInDeckRemain =
             await plugin.queue.getNumRemainingCards();
           if (totalCardsInDeckRemain !== undefined)
