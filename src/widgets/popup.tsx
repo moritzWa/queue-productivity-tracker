@@ -88,14 +88,14 @@ function Popup() {
     >
       <div style={{ margin: '0 5px', color: 'var(--text-primary)' }}>
         Clock:{' '}
-        <span style={{ fontWeight: 'bold', color: 'var(--text-success)' }}>
+        <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>
           {currentTime.toLocaleTimeString()}
         </span>
       </div>
       <div style={{ margin: '0 5px', color: 'var(--text-primary)' }}>
         Session:{' '}
         <span style={{ fontWeight: 'bold', color: 'var(--text-success)' }}>
-          {sessionDuration.toISOString().substr(11, 8)}
+          {sessionDuration.toISOString().substr(14, 5)}
         </span>
       </div>
       <div style={{ margin: '0 5px', color: 'var(--text-primary)' }}>
@@ -124,8 +124,8 @@ function Popup() {
         Expected:{' '}
         <span style={{ fontWeight: 'bold', color: 'var(--text-success)' }}>
           {remainingTime}
-        </span>
-        |
+        </span>{' '}
+        |{' '}
         <span style={{ fontWeight: 'bold', color: 'var(--text-success)' }}>
           {expectedCompletionTime}
         </span>

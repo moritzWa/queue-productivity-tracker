@@ -36,35 +36,34 @@ async function onActivate(plugin: ReactRNPlugin) {
       totalCardsCompleted: number,
       totalCardsInDeckRemain: number
     ) {
-      // Calculate cards per minute for last 5 minutes
       const now = Date.now();
       const fiveMinutesAgo = now - 5 * 60 * 1000;
       const recentCards = cardTimestamps.filter((t) => t >= fiveMinutesAgo);
-      const cardPerMinute =
-        recentCards.length > 0
-          ? parseFloat((recentCards.length / 5).toFixed(2))
-          : 0;
 
-      // Calculate remaining time (in minutes) to complete the totalCardsInDeckRemain with cardPerMinute
-      const remainingMinutes = totalCardsInDeckRemain / cardPerMinute;
+      const sessionTimeMinutes = totalTimeSpent / 60;
+      const timeWindowMinutes = Math.min(sessionTimeMinutes, 5);
 
-      // Convert remaining minutes to hours, minutes, and seconds
-      const INF_SYMBOL = '∞';
-      var remainingTime = '∞';
-      var expectedCompletionTime = '';
+      const recentSpeed = recentCards.length / timeWindowMinutes;
+      const cardPerMinute = parseFloat(recentSpeed.toFixed(2));
 
-      // Check if remainingMinutes is Infinity or close to it.
-      if (!isFinite(remainingMinutes)) {
-        remainingTime = INF_SYMBOL;
-      } else {
+      const overallCardPerMinute = parseFloat(
+        (totalCardsCompleted / sessionTimeMinutes).toFixed(2)
+      );
+      const remainingMinutes = totalCardsInDeckRemain / overallCardPerMinute;
+
+      let remainingTime = '∞';
+      let expectedCompletionTime = '';
+
+      if (isFinite(remainingMinutes)) {
         const hours = Math.floor(remainingMinutes / 60);
         const minutes = Math.floor(remainingMinutes % 60);
         remainingTime = `${hours}H ${minutes}M`;
 
-        // Calculate the expected completion time in HH:MM:SS AM/PM
-        const now = new Date();
-        now.setMinutes(now.getMinutes() + remainingMinutes);
-        expectedCompletionTime = now.toLocaleTimeString([], {
+        const completionDate = new Date();
+        completionDate.setMinutes(
+          completionDate.getMinutes() + remainingMinutes
+        );
+        expectedCompletionTime = completionDate.toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
         });
