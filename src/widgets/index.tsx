@@ -113,30 +113,25 @@ async function onActivate(plugin: ReactRNPlugin) {
       AppEvents.QueueCompleteCard,
       undefined,
       async (data) => {
+        // Count all cards for speed calculation
+        totalCardsCompleted++;
+        cardTimestamps.push(Date.now());
+
+        // Track "Again" cards separately for status display
         if (
           (data.score as QueueInteractionScore) === QueueInteractionScore.AGAIN
         ) {
           totalAgainCount++;
-          var totalCardsInDeckRemain =
-            await plugin.queue.getNumRemainingCards();
-          if (totalCardsInDeckRemain !== undefined)
-            updateDisplay(
-              totalTimeSpent,
-              totalCardsCompleted,
-              totalCardsInDeckRemain
-            );
-        } else {
-          totalCardsCompleted++;
-          cardTimestamps.push(Date.now());
-          var totalCardsInDeckRemain =
-            await plugin.queue.getNumRemainingCards();
-          if (totalCardsInDeckRemain !== undefined)
-            updateDisplay(
-              totalTimeSpent,
-              totalCardsCompleted,
-              totalCardsInDeckRemain
-            );
         }
+
+        var totalCardsInDeckRemain =
+          await plugin.queue.getNumRemainingCards();
+        if (totalCardsInDeckRemain !== undefined)
+          updateDisplay(
+            totalTimeSpent,
+            totalCardsCompleted,
+            totalCardsInDeckRemain
+          );
       }
     );
 
