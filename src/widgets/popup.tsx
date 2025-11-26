@@ -48,18 +48,32 @@ function Popup() {
     };
   }, []);
 
-  const cardPerMinuteColor =
-    cardPerMinute < 3
-      ? 'var(--text-danger)'
-      : cardPerMinute <= 5
-      ? 'var(--text-warning)'
-      : 'var(--text-success)';
+  // Generate color based on continuous gradient
+  const getCardPerMinuteColor = (value: number): string => {
+    // Clamp the value between 0 and 6 for the gradient
+    const clampedValue = Math.max(0, Math.min(6, value));
+
+    // Map 0-1 to red, 1-5 to red→green gradient, 5+ to green
+    let hue: number;
+    if (clampedValue <= 1) {
+      hue = 0; // Red
+    } else if (clampedValue >= 5) {
+      hue = 120; // Green
+    } else {
+      // Linear interpolation from hue 0 (red) to 120 (green) over range 1-5
+      hue = ((clampedValue - 1) / 4) * 120;
+    }
+
+    return `hsl(${hue}, 85%, 50%)`;
+  };
+
+  const cardPerMinuteColor = getCardPerMinuteColor(cardPerMinute);
 
   const renderArrow = () => {
     return cardPerMinute < 3 ? (
-      <span style={{ color: 'var(--text-danger)' }}>↓</span>
+      <span style={{ color: getCardPerMinuteColor(cardPerMinute) }}>↓</span>
     ) : cardPerMinute > 5 ? (
-      <span style={{ color: 'var(--text-success)' }}>↑</span>
+      <span style={{ color: getCardPerMinuteColor(cardPerMinute) }}>↑</span>
     ) : null;
   };
 
@@ -83,11 +97,10 @@ function Popup() {
         fontFamily: 'Bookerly, "Segoe UI", sans-serif',
         opacity: loaded ? 1 : 0,
         transition: 'opacity 2s',
-        borderRadius: '10px',
+        borderRadius: '6px',
         overflow: 'hidden',
         border: '0.2px solid rgba(128, 128, 128, 0.3)',
         position: 'relative',
-        paddingLeft: '10px',
         margin: '0 auto',
         width: '800px',
         background: 'transparent',
