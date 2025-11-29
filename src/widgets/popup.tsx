@@ -24,6 +24,10 @@ function Popup() {
   );
   const [expectedCompletionTime, setExpectedCompletionTime] =
     useSessionStorageState('expectedCompletionTime', '');
+  const [currentCardAgeMonths, setCurrentCardAgeMonths] = useSessionStorageState(
+    'currentCardAgeMonths',
+    0
+  );
   const [loaded, setLoaded] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -31,16 +35,10 @@ function Popup() {
     setLoaded(true);
     console.log('Popup component mounted.');
 
+    // Update clock every second
     const interval = setInterval(() => {
       setCurrentTime(new Date());
-
-      // Check if queue element exists, if not, we've left the queue
-      const queueElement = document.querySelector('.rn-queue');
-      if (!queueElement) {
-        console.log('Queue element not found, closing widget.');
-        window.close();
-      }
-    }, 3000);
+    }, 1000);
 
     return () => {
       clearInterval(interval);
@@ -68,6 +66,51 @@ function Popup() {
   };
 
   const cardPerMinuteColor = getCardPerMinuteColor(cardPerMinute);
+
+  // Generate color for card age (newer = green, older = red)
+  const getCardAgeColor = (ageMonths: number): string => {
+    let hue: number;
+    if (ageMonths <= 2.5) {
+      // Below 2.5 months: Green
+      hue = 120;
+    } else if (ageMonths >= 4) {
+      // 4+ months: Red
+      hue = 0;
+    } else {
+      // 2.5 to 4 months: Gradient from green (120) to red (0)
+      // Linear interpolation from hue 120 (green) to 0 (red) over range 2.5-4
+      const progress = (ageMonths - 2.5) / (4 - 2.5); // 0 to 1
+      hue = 120 - (progress * 120); // 120 down to 0
+    }
+
+    return `hsl(${hue}, 85%, 50%)`;
+  };
+
+  const cardAgeColor = getCardAgeColor(currentCardAgeMonths);
+
+  // Format card age as years, months, or days
+  const formatCardAge = (ageMonths: number): string => {
+    // For cards less than 1 month old, show days instead
+    if (ageMonths < 1) {
+      const ageDays = Math.floor(ageMonths * 30.44); // Convert fraction of month to days
+      return `${ageDays}d`;
+    }
+
+    // For cards less than a year old, show months
+    if (ageMonths < 12) {
+      return `${ageMonths}mo`;
+    }
+
+    // For cards over a year old, show years and months
+    const years = Math.floor(ageMonths / 12);
+    const remainingMonths = ageMonths % 12;
+
+    if (remainingMonths === 0) {
+      return `${years}y`;
+    }
+
+    return `${years}y ${remainingMonths}mo`;
+  };
 
   const renderArrow = () => {
     return cardPerMinute < 3 ? (
@@ -140,7 +183,7 @@ function Popup() {
         </span>
         ]
       </div>
-      <div style={{ margin: '0 5px', color: 'var(--text-primary)' }}>
+      {/* <div style={{ margin: '0 5px', color: 'var(--text-primary)' }}>
         Expected:{' '}
         <span style={{ fontWeight: 'bold', color: 'var(--text-success)' }}>
           {remainingTime}
@@ -148,6 +191,12 @@ function Popup() {
         |{' '}
         <span style={{ fontWeight: 'bold', color: 'var(--text-success)' }}>
           {expectedCompletionTime}
+        </span>
+      </div> */}
+      <div style={{ margin: '0 5px', color: 'var(--text-primary)' }}>
+        Card Age:{' '}
+        <span style={{ fontWeight: 'bold', color: cardAgeColor }}>
+          {formatCardAge(currentCardAgeMonths)}
         </span>
       </div>
     </div>
